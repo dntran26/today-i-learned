@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import supabase from './supabase';
 
 import './style.css';
@@ -55,7 +55,15 @@ function Counter() {
 function App() {
   // 1. Define state variable
   const [showForm, setShowForm] = useState(false);
-  const [facts, setFacts] = useState(initialFacts);
+  const [facts, setFacts] = useState([]);
+
+  useEffect(function () {
+    async function getFacts() {
+      const { data: facts, error } = await supabase.from('facts').select('*');
+      setFacts(facts);
+    }
+    getFacts();
+  }, []);
 
   return (
     <>
@@ -124,7 +132,6 @@ function NewFactForm({ setFacts, setShowForm }) {
   function handleSubmit(e) {
     // 1. Prevent browser reload
     e.preventDefault();
-    console.log(text, source, category);
 
     // 2. Check if data is valid. If so, create a new fact
     if (text && isValidHttpUrl(source) && category && textLength <= 200) {
@@ -139,7 +146,6 @@ function NewFactForm({ setFacts, setShowForm }) {
         votesFalse: 0,
         createdIn: new Date().getFullYear(),
       };
-      console.log('is valid data');
 
       // 4. Add the new fact to the UI: add the fact to state
       setFacts(facts => [newFact, ...facts]);
